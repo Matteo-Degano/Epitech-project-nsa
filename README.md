@@ -30,7 +30,12 @@ VM1 contains 4 networks cards
 
 Create the following files and fill them with the following data:
 
-I: ``` /etc/dhcpd.conf ```
+I:
+
+```bash
+/etc/dhcpd.conf
+```
+
 data : ``` subnet 192.168.42.0 netmask 255.255.255.192 ```
 
 II : ``` /etc/hostname.em1 ```
