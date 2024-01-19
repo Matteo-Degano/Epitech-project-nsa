@@ -325,4 +325,8 @@ IX: Copy the data.php script file
 cp data.php /usr/local/www/nginx
 ```
 
-Well done, you succesfully configured the web server !
+Well done, you succesfully configured the web server!
+
+## VM3 & VM4
+
+Both client machines can be installed with the system of your choice and with a GUI, the network configuration being automatically recovered by the DHCP
