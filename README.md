@@ -30,42 +30,158 @@ VM1 contains 4 networks cards
 
 Create the following files and fill them with the following data:
 
-I:
+- I:
 
 ```bash
 /etc/dhcpd.conf
 ```
 
-data : ``` subnet 192.168.42.0 netmask 255.255.255.192 ```
+```bash
+#       $OpenBSD: dhcpd.conf,v 1.1 2014/07/11 21:20:10 deraadt Exp $
+#
+# DHCP server options.
+# See dhcpd.conf(5) and dhcpd(8) for more information.
+#
 
-II : ``` /etc/hostname.em1 ```
-data : ``` inet 192.168.42.1 255.255.255.192 ```
+# Network:              192.168.1.0/255.255.255.0
+# Domain name:          my.domain
+# Name servers:         192.168.1.3 and 192.168.1.5
+# Default router:       192.168.1.1
+# Addresses:            192.168.1.32 - 192.168.1.127
+#
+# option  domain-name "my.domain";
+# option  domain-name-servers 192.168.1.3, 192.168.1.5;
 
-III : ``` /etc/hostname.em2 ```
-data : ``` net 192.168.42.65 255.255.255.192 ```
+# lan-1 administration
 
-IV : ``` /etc/hostname.em3 ```
-data : ``` inet 192.168.42.129 255.255.255.192 ```
+subnet 192.168.42.0 netmask 255.255.255.192 {
+   option routers 192.168.42.1;
+   range 192.168.42.40 192.168.42.60;
+}
 
-Start the DHCP service
+# lan-2 server
 
-I: ``` rcctl enable dhcpd ```
-II:  ``` tcctl start dhcpd ```
+subnet 192.168.42.64 netmask 255.255.255.192 {
+   option routers 192.168.42.65;
+   range 192.168.42.70 192.168.42.110;
+
+   host static-client {
+      hardware ethernet 08:00:27:17:DC:33;
+      fixed-address 192.168.42.70;
+   }
+}
+
+# lan-3 employee
+
+subnet 192.168.42.128 netmask 255.255.255.192 {
+   option routers 192.168.42.129;
+   range 192.168.42.140 192.168.42.180;
+} 
+```
+
+- II :
+
+```bash
+/etc/hostname.em1 
+```
+
+```bash
+inet 192.168.42.1 255.255.255.192 
+```
+
+- III :
+
+```bash
+ /etc/hostname.em2 
+  ```
+
+```bash
+net 192.168.42.65 255.255.255.192 
+```
+
+- IV :
+
+```bash
+ /etc/hostname.em3
+  ```
+
+ ```bash
+inet 192.168.42.129 255.255.255.192
+ ```
+
+- Start the DHCP service
+
+```bash
+ rcctl enable dhcpd
+  ```
+
+```bash
+ tcctl start dhcpd
+  ```
 
 #### - Security
 
 Create the followwing files and fill them with the following data:
 
-I: ``` /etc/pf.conf ```
+- I:
 
-II: ``` pfctl -f /etc/pf.conf ```
+```bash
+ /etc/pf.conf
+ ```
 
-III: ``` pfctl -e ```
+```bash
+ext_if = "em0"
+ADMIN = "em1"
+SERVER = "em2"
+EMPLOYEE = "em3"
+NETWORKINTERFACES = "{ em1, em2, em3 }"
+NETWORKS = "{ em1:network, em2:network, em3:network }"
+webserver = 192.168.42.70
+set skip on lo
+block all
+pass out on $ext_if
+pass in on $ext_if proto tcp from any to any port 22
 
-####- Internet : 
+# Ping
+pass in on $NETWORKINTERFACES proto icmp from $NETWORKS
+pass out on $NETWORKINTERFACES proto icmp from $NETWORKS
 
-Go to ```/etc/syscl.conf```
-And put in ```net.inet.ip.forwarding=1```
+#Web Server
+pass in on $NETWORKINTERFACES proto { udp tcp } from any to $webserver port { 80 443 }
+
+# DNS Rules
+pass in on $NETWORKINTERFACES proto { udp tcp } from any to any port { 53 80 443 }
+pass out on $NETWORKINTERFACES proto { udp tcp } from any to any port { 53 80 443 }
+
+# LAN to WAN by gateway
+pass out on $ext_if from $NETWORKS to any nat-to $ext_if
+```
+
+- II:
+
+```bash
+ pfctl -f /etc/pf.conf
+  ```
+
+- III:
+
+```bash
+ pfctl -e
+  ```
+
+#### - Internet :
+
+Go to
+
+```bash
+/etc/syscl.conf
+```
+
+And put in
+
+```bash
+net.inet.ip.forwarding=1
+```
 
 Congratulations, you just have configured the first VM !
 
@@ -80,28 +196,67 @@ ISO FreeBSD 13.2
 
 #### - Nginx
 
-I: ```pkg install nginx```
+I: 
 
-II: ```service nginx enable```
+```bash
+pkg install nginx
+```
 
-III: ```service nginx start```
+II: 
+
+```bash
+service nginx enable
+```
+
+III:
+
+```bash
+service nginx start
+```
 
 #### - Php 8.1
 
-I: ```pkg install php81```
+I:
 
-II: ```cp -v /usr/local/etc/php.ini-production /usr/local/etc/php.ini```
+```bash
+pkg install php81
+```
 
-III: ```pkg install vim php81-xml mod_php81 php81-zip php81-mbstring php81-zlib php81-curl php81-mysqli php81-gd php81-gd```
+II:
 
-IV: ```service php-fpm enable```
-    ``` service php-fpm start```
+```bash
+cp -v /usr/local/etc/php.ini-production /usr/local/etc/php.ini
+```
+
+III:
+
+```bash
+pkg install vim php81-xml mod_php81 php81-zip php81-mbstring php81-zlib php81-curl php81-mysqli php81-gd php81-gd
+```
+
+IV:
+
+```bash
+service php-fpm enable
+```
+
+```bash
+service php-fpm start
+```
 
 #### - MySQL
 
-I: ```pkg install mysql180-server```
+I:
 
-II: ```service mysql-server onestart```
+```bash
+pkg install mysql180-server
+```
+
+II:
+
+```bash
+service mysql-server onestart
+```
 
 III: ```mysql_secure_installation```
 
