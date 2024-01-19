@@ -121,7 +121,7 @@ inet 192.168.42.129 255.255.255.192
 
 #### - Security
 
-Create the followwing files and fill them with the following data:
+Create the following file and fill with the following data:
 
 - I:
 
@@ -169,7 +169,7 @@ pass out on $ext_if from $NETWORKS to any nat-to $ext_if
  pfctl -e
   ```
 
-#### - Internet :
+#### - Internet
 
 Go to
 
@@ -196,13 +196,13 @@ ISO FreeBSD 13.2
 
 #### - Nginx
 
-I: 
+I:
 
 ```bash
 pkg install nginx
 ```
 
-II: 
+II:
 
 ```bash
 service nginx enable
@@ -258,13 +258,26 @@ II:
 service mysql-server onestart
 ```
 
-III: ```mysql_secure_installation```
+III: 
 
-IV: ```service mysql-server enable```
-```service mysql-server start```
+```bash
+mysql_secure_installation
+```
+
+IV:
+
+```bash
+service mysql-server enable
+```
+
+```bash
+service mysql-server start
+```
 
 V: Update /etc/rc.conf with those datas : 
-```defaultrouter="192.168.42.65" (ip de la gateway)
+
+```bash
+defaultrouter="192.168.42.65" (ip de la gateway)
 mysql_enable=”YES”
 nginx_enable=”YES”
 php_fpm_enable=”YES”```
@@ -286,20 +299,30 @@ VI: Update /usr/local/etc/nginx/nginx.conf with those datas:
         fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include        fastcgi_params;
     }
-}```
+}
+```
 
 VII: Create database and user
-```mysql -u root -p```
-```CREATE DATABASE nsa501```;
-```CREATE USER 'backend'@'localhost' IDENTIFIED BY 'Bit8Q6a6G';```
-```GRANT ALL PRIVILEGES ON nsa501.* TO 'backend'@'localhost';```
-```FLUSH PRIVILEGES;```
-```EXIT```
+
+```bash
+mysql -u root -p
+CREATE DATABASE nsa501;
+CREATE USER 'backend'@'localhost' IDENTIFIED BY 'Bit8Q6a6G;
+GRANT ALL PRIVILEGES ON nsa501.* TO 'backend'@'localhost;
+FLUSH PRIVILEGES;
+EXIT;
+```
 
 VIII: Copy database with the nsa501.sql file
-```mysql -u backend -p nsa501 < /nsa501.sql```
 
-IX: Copy the data.php script file 
-```cp data.php /usr/local/www/nginx```
+```bash
+mysql -u backend -p nsa501 < /nsa501.sql
+```
+
+IX: Copy the data.php script file
+
+```bash
+cp data.php /usr/local/www/nginx
+```
 
 Well done, you succesfully configured the web server !
